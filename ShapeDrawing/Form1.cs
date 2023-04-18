@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,9 +27,11 @@ namespace ShapeDrawing
         Bitmap imagePreview;
         List<IShape> shapes = new List<IShape>();
 
+
         Polygon tempPoly;
         IShape LastEdited;
         int polygonIndexEdited;
+        int lastIndexEdited;
 
         public Form1()
         {
@@ -184,6 +187,34 @@ namespace ShapeDrawing
                 return;
             }
 
+        }
+
+        public void DrawThickLine(int x1, int y1, int x2, int y2)
+        {
+            double radius = Convert.ToDouble(thicknessBox.Text) + 0.5;
+            int x = 0, y = (int)radius;
+            int d = 1 - (int)radius;
+
+            while (x <= y)
+            {
+                DrawLine(x1 + x, y1 + y, x2 + x, y2 + y);
+                DrawLine(x1 - x, y1 + y, x2 - x, y2 + y);
+                DrawLine(x1 + x, y1 - y, x2 + x, y2 - y);
+                DrawLine(x1 - x, y1 - y, x2 - x, y2 - y);
+                DrawLine(x1 + y, y1 + x, x2 + y, y2 + x);
+                DrawLine(x1 - y, y1 + x, x2 - y, y2 + x);
+                DrawLine(x1 + y, y1 - x, x2 + y, y2 - x);
+                DrawLine(x1 - y, y1 - x, x2 - y, y2 - x);
+
+                x++;
+                if (d < 0)
+                    d += 2 * x + 1;
+                else
+                {
+                    y--;
+                    d += 2 * (x - y) + 1;
+                }
+            }
         }
 
         public void DrawCircle(int x1, int y1, int x2, int y2,Color color)
@@ -401,6 +432,7 @@ namespace ShapeDrawing
                         break;
                     case 'P':
                         Polygon tmpPolygon = shape as Polygon;
+                        tempPoly = tmpPolygon;
                         DrawPolygon(tmpPolygon.startX, tmpPolygon.startY);
                         break;
                 }
@@ -510,6 +542,7 @@ namespace ShapeDrawing
                     {
                         if (shapes[i].Check(e.X, e.Y))
                         {
+                            lastIndexEdited = i;
                             switch (shapes[i].name)
                             {
                                 case 'L':
@@ -626,7 +659,7 @@ namespace ShapeDrawing
                             }
                             break;
                     case 1:
-                        DrawLine(x1, y1, e.X, e.Y);
+                        DrawThickLine(x1, y1, e.X, e.Y);
                         break;
                     case 2:
                         DrawLine(x1, y1, e.X, e.Y);
@@ -674,7 +707,7 @@ namespace ShapeDrawing
                     break;
                 case 1:
                     drawing = false;
-                    shapes.Add(new Line(x1, y1, e.X, e.Y));
+                    shapes.Add(new Line(x1, y1, e.X, e.Y,Convert.ToInt32(thicknessBox.Text)));
                     image = (Bitmap)imagePreview.Clone();
                     break;
                 case 2:
@@ -690,7 +723,73 @@ namespace ShapeDrawing
                     image = (Bitmap)imagePreview.Clone();
                     break;
             }
-            
+
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back)
+                if(LastEdited != null)
+                {
+                    shapes.RemoveAt(lastIndexEdited);
+                    LastEdited = null;
+                    Redraw();
+                }
+        }
+
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog save = new SaveFileDialog();
+            save.FileName = "Unnamed.txt";
+            save.Filter = "Text File | *.txt";
+
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter writer = new StreamWriter(save.OpenFile());
+                foreach (var shape in shapes)
+                {
+                    writer.WriteLine(shape.Save());
+                }
+
+                writer.Dispose();
+                writer.Close();
+            }
+        }
+
+        private void loadButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFile = new OpenFileDialog();
+            openFile.InitialDirectory = @"C:\txt";
+            openFile.Title = "Browse Text Files Only";
+            openFile.Filter = "Text Files Only (*.txt) | *.txt";
+            openFile.DefaultExt = "txt";
+            if (openFile.ShowDialog() == DialogResult.OK)
+            {
+                shapes.Clear();
+                var lines = File.ReadLines(openFile.FileName);
+                foreach(var line in lines)
+                {
+                    string[] details = line.Split(';');
+                    switch (line[0])
+                    {
+                        case 'L':
+                            shapes.Add(new Line(Convert.ToInt32(details[2]), Convert.ToInt32(details[3]),
+                                                Convert.ToInt32(details[4]), Convert.ToInt32(details[5]), 
+                                                Convert.ToInt32(details[1])));
+                            break;
+                        case 'C':
+                            shapes.Add(new Circle(Convert.ToInt32(details[1]), Convert.ToInt32(details[2]), Convert.ToDouble(details[3])));
+                            break;
+                        case 'P':
+                            List<(int x, int y)> points = new List<(int x, int y)>();
+                            for(int i = 1; i < details.Length; i += 2)
+                                points.Add((Convert.ToInt32(details[i]), Convert.ToInt32(details[i + 1])));
+                            shapes.Add(new Polygon(points));
+                            break;
+                    }
+                }
+                Redraw();
+            }
         }
     }
 }

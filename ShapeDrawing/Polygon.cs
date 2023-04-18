@@ -53,7 +53,12 @@ namespace ShapeDrawing
 
         public string Save()
         {
-            throw new NotImplementedException();
+            string pointStrings ="";
+            foreach(var point in points)
+            {
+                pointStrings += ";" + point.x + ";" + point.y;
+            }
+            return name + pointStrings;
         }
 
         public bool Check(int x, int y)

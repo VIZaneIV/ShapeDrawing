@@ -22,6 +22,16 @@ namespace ShapeDrawing
             Y2 = y2;
         }
 
+        public Line(int x1, int y1, int x2, int y2, int thickness)
+        {
+            this.thickness = thickness;
+            this.name = 'L';
+            X1 = x1;
+            Y1 = y1;
+            X2 = x2;
+            Y2 = y2;
+        }
+
         public Line(Line line)
         {
             this.name = 'L';
@@ -33,7 +43,7 @@ namespace ShapeDrawing
 
         public string Save()
         {
-            throw new NotImplementedException();
+            return name + ";" + thickness + ";" + X1 + ";" + Y1 + ";" + X2 + ";" + Y2;
         }
 
         public bool Check(int x, int y)

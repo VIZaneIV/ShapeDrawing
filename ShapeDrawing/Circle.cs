@@ -35,7 +35,7 @@ namespace ShapeDrawing
 
         public string Save()
         {
-            throw new NotImplementedException();
+            return name + ";" + centerX + ";" + centerY + ";" + radius;
         }
 
         public bool Check(int x, int y)
