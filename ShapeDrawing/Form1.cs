@@ -19,6 +19,7 @@ namespace ShapeDrawing
                       // 2 - Brush
                       // 3 - Circle
                       // 4 - Polygon
+                      // 5 - Capsule
 
         bool drawing = false;
         Bitmap image;
@@ -81,7 +82,6 @@ namespace ShapeDrawing
             }
             // See the direction of the line by calculating Tan(alpha): (N-NE, NE-E, E-SE, SE-S)
             double angle = Convert.ToDouble(finishY - startY) / Convert.ToDouble(finishX - startX);
-            //this.Text = Convert.ToString(angle);
             double bCoeff = startY - angle * startX;
             int LastX = startX, LastY = startY;
             imagePreview.SetPixel(startX, startY, Color.Black);
@@ -217,6 +217,124 @@ namespace ShapeDrawing
             Canvas.Image = imagePreview;
         }
 
+        public void DrawHalfCircle(int x1,int y1,int tangentX1, int tangentY1, int tangentX2, int tangentY2, double radius, string direction, Color color)
+        {
+            int x = 0, y = (int)radius;
+            int d = 1 - (int)radius;
+            // If capsule is drawn horizontaly
+            if(tangentX1 == tangentX2)
+            {
+                while (x <= y)
+                {
+                    if (direction == "Above")
+                    {
+                        if (x1 + x <= tangentX1)
+                            imagePreview.SetPixel(x1 + x, y1 + y, color);
+                        if (x1 - x <= tangentX1)
+                            imagePreview.SetPixel(x1 - x, y1 + y, color);
+                        if (x1 + x <= tangentX1)
+                            imagePreview.SetPixel(x1 + x, y1 - y, color);
+                        if (x1 - x <= tangentX1)
+                            imagePreview.SetPixel(x1 - x, y1 - y, color);
+                        if (x1 + y <= tangentX1)
+                            imagePreview.SetPixel(x1 + y, y1 + x, color);
+                        if (x1 - y <= tangentX1)
+                            imagePreview.SetPixel(x1 - y, y1 + x, color);
+                        if (x1 + y <= tangentX1)
+                            imagePreview.SetPixel(x1 + y, y1 - x, color);
+                        if (x1 - y <= tangentX1)
+                            imagePreview.SetPixel(x1 - y, y1 - x, color);
+                    }
+                    else
+                    {
+                        if (x1 + x >= tangentX1)
+                            imagePreview.SetPixel(x1 + x, y1 + y, color);
+                        if (x1 - x <= tangentX1)
+                            imagePreview.SetPixel(x1 - x, y1 + y, color);
+                        if (x1 + x <= tangentX1)
+                            imagePreview.SetPixel(x1 + x, y1 - y, color);
+                        if (x1 - x <= tangentX1)
+                            imagePreview.SetPixel(x1 - x, y1 - y, color);
+                        if (x1 + y <= tangentX1)
+                            imagePreview.SetPixel(x1 + y, y1 + x, color);
+                        if (x1 - y <= tangentX1)
+                            imagePreview.SetPixel(x1 - y, y1 + x, color);
+                        if (x1 + y <= tangentX1)
+                            imagePreview.SetPixel(x1 + y, y1 - x, color);
+                        if (x1 - y <= tangentX1)
+                            imagePreview.SetPixel(x1 - y, y1 - x, color);
+                    }
+
+                    x++;
+                    if (d < 0)
+                        d += 2 * x + 1;
+                    else
+                    {
+                        y--;
+                        d += 2 * (x - y) + 1;
+                    }
+                }
+                return;
+            }
+
+            // Calculate line equation
+                double angle = Convert.ToDouble(tangentY2 - tangentY1) / Convert.ToDouble(tangentX2 - tangentX1);
+                double bCoeff = tangentY1 - angle * tangentX1;
+
+            while (x <= y)
+            {   
+                if (direction == "Above")
+                {
+                    if (angle * (x1 + x) + bCoeff >= y1 + y)
+                        imagePreview.SetPixel(x1 + x, y1 + y, color);
+                    if (angle * (x1 - x) + bCoeff >= y1 + y)
+                        imagePreview.SetPixel(x1 - x, y1 + y, color);
+                    if (angle * (x1 + x) + bCoeff >= y1 - y)
+                        imagePreview.SetPixel(x1 + x, y1 - y, color);
+                    if (angle * (x1 - x) + bCoeff >= y1 - y)
+                        imagePreview.SetPixel(x1 - x, y1 - y, color);
+                    if (angle * (x1 + y) + bCoeff >= y1 + x)
+                        imagePreview.SetPixel(x1 + y, y1 + x, color);
+                    if (angle * (x1 - y) + bCoeff >= y1 + x)
+                        imagePreview.SetPixel(x1 - y, y1 + x, color);
+                    if (angle * (x1 + y) + bCoeff >= y1 - x)
+                        imagePreview.SetPixel(x1 + y, y1 - x, color);
+                    if (angle * (x1 - y) + bCoeff >= y1 - x)
+                        imagePreview.SetPixel(x1 - y, y1 - x, color);
+                }
+                else
+                {
+                    if (angle * (x1 + x) + bCoeff <= y1 + y)
+                        imagePreview.SetPixel(x1 + x, y1 + y, color);
+                    if (angle * (x1 - x) + bCoeff <= y1 + y)
+                        imagePreview.SetPixel(x1 - x, y1 + y, color);
+                    if (angle * (x1 + x) + bCoeff <= y1 - y)
+                        imagePreview.SetPixel(x1 + x, y1 - y, color);
+                    if (angle * (x1 - x) + bCoeff <= y1 - y)
+                        imagePreview.SetPixel(x1 - x, y1 - y, color);
+                    if (angle * (x1 + y) + bCoeff <= y1 + x)
+                        imagePreview.SetPixel(x1 + y, y1 + x, color);
+                    if (angle * (x1 - y) + bCoeff <= y1 + x)
+                        imagePreview.SetPixel(x1 - y, y1 + x, color);
+                    if (angle * (x1 + y) + bCoeff <= y1 - x)
+                        imagePreview.SetPixel(x1 + y, y1 - x, color);
+                    if (angle * (x1 - y) + bCoeff <= y1 - x)
+                        imagePreview.SetPixel(x1 - y, y1 - x, color);
+                }
+
+                x++;
+                if (d < 0)
+                    d += 2 * x + 1;
+                else
+                {
+                    y--;
+                    d += 2 * (x - y) + 1;
+                }
+            }
+
+            Canvas.Image = imagePreview;
+        }
+
         public bool DrawPolygon(int x2, int y2)
         {
             // Stop drawing polygon? Click next to the start point
@@ -291,29 +409,93 @@ namespace ShapeDrawing
 
         }
 
+        private void DrawCapsule(int x, int y)
+        {
+            int radius = 20;
+            double dx = x1 - x;
+            double dy = y1 - y;
+            double dist = Math.Sqrt(dx * dx + dy * dy);
+            dx /= dist;
+            dy /= dist;
+
+            int tangentAX1 = (int)(x1 + radius * dy), tangentAY1 = (int)(y1 - radius * dx), 
+                tangentAX2 = (int)(x1 - radius * dy), tangentAY2 = (int)(y1 + radius * dx);
+            int tangentBX1 = (int)(x + radius * dy), tangentBY1 = (int)(y - radius * dx),
+                tangentBX2 = (int)(x - radius * dy), tangentBY2 = (int)(y + radius * dx);
+
+            if (x1 < x)
+            {
+                if (y1 <= y)
+                {
+                    DrawHalfCircle(x1, y1, tangentAX1, tangentAY1, tangentAX2, tangentAY2, radius, "Above", Color.Black);
+                    DrawHalfCircle(x, y, tangentBX1, tangentBY1, tangentBX2, tangentBY2, radius, "Below", Color.Black);
+                }
+                else
+                {
+                    DrawHalfCircle(x1, y1, tangentAX1, tangentAY1, tangentAX2, tangentAY2, radius, "Below", Color.Black);
+                    DrawHalfCircle(x, y, tangentBX1, tangentBY1, tangentBX2, tangentBY2, radius, "Above", Color.Black);
+                }
+            }
+            else
+            {
+                if(y1 < y)
+                {
+                    DrawHalfCircle(x1, y1, tangentAX1, tangentAY1, tangentAX2, tangentAY2, radius, "Above", Color.Black);
+                    DrawHalfCircle(x, y, tangentBX1, tangentBY1, tangentBX2, tangentBY2, radius, "Below", Color.Black);
+                }
+                else
+                {
+                    DrawHalfCircle(x1, y1, tangentAX1, tangentAY1, tangentAX2, tangentAY2, radius, "Below", Color.Black);
+                    DrawHalfCircle(x, y, tangentBX1, tangentBY1, tangentBX2, tangentBY2, radius, "Above", Color.Black);
+                }
+            }
+            
+            //DrawCircle(x1, y1, x1, y1 + radius, Color.Black);
+            //DrawCircle(x, y, x, y + radius, Color.Black);
+
+
+
+            DrawLine(tangentAX1, tangentAY1,
+                        tangentBX1, tangentBY1);
+            DrawLine(tangentAX2, tangentAY2,
+                        tangentBX2, tangentBY2);
+
+        }
+
         private void grabButton_Click(object sender, EventArgs e)
         {
             mode = 0;
+            this.Text = "Grab";
         }
 
         private void thicknessButton_Click(object sender, EventArgs e)
         {
             mode = 1;
+            this.Text = "Line";
         }
 
         private void brushButton_Click(object sender, EventArgs e)
         {
             mode = 2;
+            this.Text = "Brush";
         }
 
         private void circleButton_Click(object sender, EventArgs e)
         {
             mode = 3;
+            this.Text = "Circle";
         }
 
         private void polygonButton_Click(object sender, EventArgs e)
         {
             mode = 4;
+            this.Text = "Polygon";
+        }
+
+        private void capsuleButton_Click(object sender, EventArgs e)
+        {
+            mode = 5;
+            this.Text = "Capsule";
         }
 
         private void Canvas_MouseDown(object sender, MouseEventArgs e)
@@ -410,6 +592,11 @@ namespace ShapeDrawing
                         }
                     }
                     break;
+                case 5:
+                    x1 = e.X;
+                    y1 = e.Y;
+                    drawing = true;
+                    break;
 
             }
         }
@@ -453,6 +640,9 @@ namespace ShapeDrawing
                     case 4:
                         DrawPolygon(e.X, e.Y);
                         break;
+                    case 5:
+                        DrawCapsule(e.X, e.Y);
+                        break;
                 }
             }
         }
@@ -493,6 +683,10 @@ namespace ShapeDrawing
                 case 3:
                     drawing = false;
                     shapes.Add(new Circle(x1, y1, Math.Sqrt((e.X - x1) * (e.X - x1) + (e.Y - y1) * (e.Y - y1))));
+                    image = (Bitmap)imagePreview.Clone();
+                    break;
+                case 5:
+                    drawing = false;
                     image = (Bitmap)imagePreview.Clone();
                     break;
             }
