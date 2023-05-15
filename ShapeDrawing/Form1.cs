@@ -21,8 +21,11 @@ namespace ShapeDrawing
                       // 3 - Circle
                       // 4 - Polygon
                       // 5 - Capsule
+                      // 6 - Rectangle
+                      // 7 - Box Select
 
         bool drawing = false;
+        bool move = false;
         Bitmap image;
         Bitmap imagePreview;
         List<IShape> shapes = new List<IShape>();
@@ -32,6 +35,17 @@ namespace ShapeDrawing
         IShape LastEdited;
         int polygonIndexEdited;
         int lastIndexEdited;
+
+        Rectangle selection = new Rectangle(0,0,0,0);
+
+        public enum Outcode
+        {
+            Inside = 0,
+            Left = 1,
+            Right = 2,
+            Bottom = 4,
+            Top = 8
+        }
 
         public Form1()
         {
@@ -47,10 +61,48 @@ namespace ShapeDrawing
             Canvas.Image = bmp;
             image = bmp;
 
+            InitializeComboBox();
         }
 
-        public void DrawLine(int x1, int y1, int x2,int y2)
+        public void InitializeComboBox()
         {
+            colorComboBox.Items.Add(Color.Red);
+            colorComboBox.Items.Add(Color.Orange);
+            colorComboBox.Items.Add(Color.Yellow);
+            colorComboBox.Items.Add(Color.Green);
+            colorComboBox.Items.Add(Color.Blue);
+            colorComboBox.Items.Add(Color.Violet);
+            //colorComboBox.DrawItem += ColorComboBox_DrawItem;
+        }
+
+        //private void ColorComboBox_DrawItem(object sender, DrawItemEventArgs e)
+        //{
+        //    if (e.Index < 0)
+        //        return;
+
+        //    // Retrieve the ComboBoxItem
+        //    ComboBoxItem item = (ComboBoxItem)colorComboBox.Items[e.Index];
+
+        //    // Set the background color and text color based on the item's state
+        //    Brush backgroundBrush = (e.State & DrawItemState.Selected) == DrawItemState.Selected
+        //        ? SystemBrushes.Highlight
+        //        : new SolidBrush(item.BackgroundColor);
+        //    Brush textBrush = (e.State & DrawItemState.Selected) == DrawItemState.Selected
+        //        ? SystemBrushes.HighlightText
+        //        : SystemBrushes.WindowText;
+
+        //    // Clear the area
+        //    e.Graphics.FillRectangle(backgroundBrush, e.Bounds);
+
+        //    // Draw the color name text
+        //    System.Drawing.Rectangle textRect = new System.Drawing.Rectangle(e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height);
+        //    e.Graphics.DrawString(item.Text, e.Font, textBrush, textRect);
+        //}
+
+        public void DrawLine(int x1, int y1, int x2, int y2, Color color = default)
+        {
+            if (color == Color.Empty)
+                color = Color.Black;
             // We'll draw left to right
             int startX = 0, startY = 0;
             int finishX = 0, finishY = 0;
@@ -64,7 +116,7 @@ namespace ShapeDrawing
 
                 for (int i = 0; i < Math.Abs(y2 - y1); i++)
                 {
-                    imagePreview.SetPixel(x1, startY + i, Color.Black);
+                    imagePreview.SetPixel(x1, startY + i, color);
                 }
                 return;
             }
@@ -87,7 +139,7 @@ namespace ShapeDrawing
             double angle = Convert.ToDouble(finishY - startY) / Convert.ToDouble(finishX - startX);
             double bCoeff = startY - angle * startX;
             int LastX = startX, LastY = startY;
-            imagePreview.SetPixel(startX, startY, Color.Black);
+            imagePreview.SetPixel(startX, startY, color);
             if (angle <= -1) // N-NE
             {
                 for (int i = 0; i < Math.Abs(finishY - startY); i++) 
@@ -99,12 +151,12 @@ namespace ShapeDrawing
                     //Is the line above or below it?
                     if((MidY-bCoeff)/angle < MidX)
                     {
-                        imagePreview.SetPixel(LastX, LastY - 1, Color.Black);
+                        imagePreview.SetPixel(LastX, LastY - 1, color);
                         LastY -= 1;
                     }
                     else
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY - 1, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY - 1, color);
                         LastX += 1;
                         LastY -= 1;
                     }
@@ -124,12 +176,12 @@ namespace ShapeDrawing
                     //Is the line above or below it?
                     if (angle*MidX + bCoeff > MidY)
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY, color);
                         LastX += 1;
                     }
                     else
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY - 1, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY - 1, color);
                         LastX += 1;
                         LastY -= 1;
                     }
@@ -148,12 +200,12 @@ namespace ShapeDrawing
                     //Is the line above or below it?
                     if (angle * MidX + bCoeff < MidY)
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY, color);
                         LastX += 1;
                     }
                     else
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY + 1, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY + 1, color);
                         LastX += 1;
                         LastY += 1;
                     }
@@ -172,12 +224,12 @@ namespace ShapeDrawing
                     //Is the line above or below it?
                     if ((MidY - bCoeff) / angle < MidX)
                     {
-                        imagePreview.SetPixel(LastX, LastY + 1, Color.Black);
+                        imagePreview.SetPixel(LastX, LastY + 1, color);
                         LastY += 1;
                     }
                     else
                     {
-                        imagePreview.SetPixel(LastX + 1, LastY + 1, Color.Black);
+                        imagePreview.SetPixel(LastX + 1, LastY + 1, color);
                         LastX += 1;
                         LastY += 1;
                     }
@@ -375,8 +427,13 @@ namespace ShapeDrawing
                 {
                     DrawLine(tempPoly.points[i].x, tempPoly.points[i].y,
                                 tempPoly.points[i + 1].x, tempPoly.points[i + 1].y);
+                    Cohen_Sutherland(tempPoly.points[i].x, tempPoly.points[i].y,
+                                tempPoly.points[i + 1].x, tempPoly.points[i + 1].y);
+
                 }
                 DrawLine(tempPoly.points[tempPoly.points.Count - 1].x, tempPoly.points[tempPoly.points.Count - 1].y,
+                            tempPoly.points[0].x, tempPoly.points[0].y);
+                Cohen_Sutherland(tempPoly.points[tempPoly.points.Count - 1].x, tempPoly.points[tempPoly.points.Count - 1].y,
                             tempPoly.points[0].x, tempPoly.points[0].y);
                 return true;
             }
@@ -388,9 +445,13 @@ namespace ShapeDrawing
             {
                 DrawLine(tempPoly.points[i].x, tempPoly.points[i].y,
                             tempPoly.points[i + 1].x, tempPoly.points[i + 1].y);
+                Cohen_Sutherland(tempPoly.points[i].x, tempPoly.points[i].y,
+            tempPoly.points[i + 1].x, tempPoly.points[i + 1].y);
             }
             // Last edge is drawn to the cursor
             DrawLine(tempPoly.points[tempPoly.points.Count - 1].x, tempPoly.points[tempPoly.points.Count - 1].y,
+                        x2, y2);
+            Cohen_Sutherland(tempPoly.points[tempPoly.points.Count - 1].x, tempPoly.points[tempPoly.points.Count - 1].y,
                         x2, y2);
             return false;
         }
@@ -401,9 +462,38 @@ namespace ShapeDrawing
             {
                 DrawLine(polygon.points[i].x, polygon.points[i].y,
                             polygon.points[i + 1].x, polygon.points[i + 1].y);
+                Cohen_Sutherland(polygon.points[i].x, polygon.points[i].y,
+                            polygon.points[i + 1].x, polygon.points[i + 1].y);
             }
             DrawLine(polygon.points[polygon.points.Count - 1].x, polygon.points[polygon.points.Count - 1].y,
                         polygon.points[0].x, polygon.points[0].y);
+            Cohen_Sutherland(polygon.points[polygon.points.Count - 1].x, polygon.points[polygon.points.Count - 1].y,
+                        polygon.points[0].x, polygon.points[0].y);
+        }
+
+        private void DrawRectangle(int x2, int y2, Color color = default)
+        {
+            if (color == Color.Empty)
+                color = Color.Black;
+            DrawLine(x1, y1, x2, y1, color);
+            DrawLine(x2, y1, x2, y2, color);
+            DrawLine(x2, y2, x1, y2, color);
+            DrawLine(x1, y2, x1, y1, color);
+        }
+
+        private void DrawRectangle(int x1, int y1, int x2, int y2, Color color = default)
+        {
+            if (color == Color.Empty)
+                color = Color.Black;
+            DrawLine(x1, y1, x2, y1, color);
+            DrawLine(x2, y1, x2, y2, color);
+            DrawLine(x2, y2, x1, y2, color);
+            DrawLine(x1, y2, x1, y1, color);
+
+            Cohen_Sutherland(x1, y1, x2, y1);
+            Cohen_Sutherland(x2, y1, x2, y2);
+            Cohen_Sutherland(x2, y2, x1, y2);
+            Cohen_Sutherland(x1, y2, x1, y1);
         }
 
         private void Redraw()
@@ -425,6 +515,7 @@ namespace ShapeDrawing
                     case 'L':
                         Line tmpLine = shape as Line;
                         DrawLine(tmpLine.X1, tmpLine.Y1, tmpLine.X2, tmpLine.Y2);
+                        Cohen_Sutherland(tmpLine.X1, tmpLine.Y1, tmpLine.X2, tmpLine.Y2);
                         break;
                     case 'C':
                         Circle tmpCircle = shape as Circle;
@@ -435,11 +526,100 @@ namespace ShapeDrawing
                         tempPoly = tmpPolygon;
                         DrawPolygon(tmpPolygon.startX, tmpPolygon.startY);
                         break;
+                    case 'R':
+                        Rectangle tmprectangle = shape as Rectangle;
+                        DrawRectangle(tmprectangle.points[0].x, tmprectangle.points[0].y,
+                                        tmprectangle.points[2].x, tmprectangle.points[2].y);
+                        break;
                 }
             }
             image = (Bitmap)imagePreview.Clone();
 
         }
+
+        private Outcode CalculateOutcode(int x, int y)
+        {
+            Outcode outcode = Outcode.Inside;
+
+            if (x < selection.left)
+                outcode |= Outcode.Left;
+            else if (x > selection.right)
+                outcode |= Outcode.Right;
+
+            if (y < selection.up)
+                outcode |= Outcode.Top;
+            else if (y > selection.down)
+                outcode |= Outcode.Bottom;
+
+            return outcode;
+        }
+
+        private void Cohen_Sutherland(int x1, int y1, int x2, int y2)
+        {
+            Outcode outcode1 = CalculateOutcode(x1, y1);
+            Outcode outcode2 = CalculateOutcode(x2, y2);
+            bool accepted = false;
+
+            while (true)
+            {
+                // Completely inside
+                if ((outcode1 | outcode2) == Outcode.Inside)
+                {
+                    accepted = true;
+                    break;
+                }
+                // Completely outside
+                if ((outcode1 & outcode2) != Outcode.Inside)
+                {
+                    break;
+                }
+                // The line may intersect selection box
+                Outcode outcodeOut = outcode1 != Outcode.Inside ? outcode1 : outcode2;
+
+                // Calculate intersection point
+                Point intersectionPoint = new Point();
+                if ((outcodeOut & Outcode.Top) == Outcode.Top)
+                {
+                    intersectionPoint.X = (int)(x1 + (float)((x2 - x1) * (selection.up - y1)) / (y2 - y1));
+                    intersectionPoint.Y = selection.up;
+                }
+                else if ((outcodeOut & Outcode.Bottom) == Outcode.Bottom)
+                {
+                    intersectionPoint.X = (int)(x1 + (float)((x2 - x1) * (selection.down - y1)) / (y2 - y1));
+                    intersectionPoint.Y = selection.down;
+                }
+                else if ((outcodeOut & Outcode.Right) == Outcode.Right)
+                {
+                    intersectionPoint.Y = (int)(y1 + (float)((y2 - y1) * (selection.right - x1)) / (x2 - x1));
+                    intersectionPoint.X = selection.right;
+                }
+                else if ((outcodeOut & Outcode.Left) == Outcode.Left)
+                {
+                    intersectionPoint.Y = (int)(y1 + (float)((y2 - y1) * (selection.left - x1)) / (x2 - x1));
+                    intersectionPoint.X = selection.left;
+                }
+
+                if (outcodeOut == outcode1)
+                {
+                    x1 = intersectionPoint.X;
+                    y1 = intersectionPoint.Y;
+                    outcode1 = CalculateOutcode(x1, y1);
+                }
+                else
+                {
+                    x2 = intersectionPoint.X;
+                    y2 = intersectionPoint.Y;
+                    outcode2 = CalculateOutcode(x2, y2);
+                }
+            }
+            if (accepted)
+                DrawLine(x1, y1, x2, y2, Color.Red);
+        }
+
+        //private (int x, int y) Subdivide(int x1, int y1, int x2, int y2,Outcode outcode)
+        //{
+
+        //}
 
         private void DrawCapsule(int x, int y)
         {
@@ -530,6 +710,24 @@ namespace ShapeDrawing
             this.Text = "Capsule";
         }
 
+        private void rectangleButton_Click(object sender, EventArgs e)
+        {
+            mode = 6;
+            this.Text = "Rectangle";
+        }
+
+        private void selectButton_Click(object sender, EventArgs e)
+        {
+            mode = 7;
+            this.Text = "Select";
+        }
+
+        private void bucketButton_Click(object sender, EventArgs e)
+        {
+            mode = 8;
+            this.Text = "Bucket";
+        }
+
         private void Canvas_MouseDown(object sender, MouseEventArgs e)
         {
             if (!drawing)
@@ -537,7 +735,7 @@ namespace ShapeDrawing
             switch (mode)
             {
                 case 0:
-                    // Iterate over all shapes to find one selecter
+                    // Iterate over all shapes to find one selected
                     for (int i = 0; i<shapes.Count;i++)
                     {
                         if (shapes[i].Check(e.X, e.Y))
@@ -581,6 +779,25 @@ namespace ShapeDrawing
                                             break;
                                         }
                                     }
+                                    drawing = true;
+                                    break;
+                                case 'R':
+                                    Rectangle tmpRectangle = new Rectangle(shapes[i] as Rectangle);
+                                    LastEdited = tmpRectangle;
+                                    shapes.RemoveAt(i);
+                                    if (Math.Sqrt(Math.Pow(tmpRectangle.center.x - e.X, 2) + Math.Pow(tmpRectangle.center.y - e.Y, 2)) > 10)
+                                        foreach (var point in tmpRectangle.points)
+                                        {
+                                            if (Math.Sqrt(Math.Pow(point.x - e.X, 2) + Math.Pow(point.y - e.Y, 2)) <= 10)
+                                            {
+                                                polygonIndexEdited = tmpRectangle.points.IndexOf(point);
+                                                x1 = tmpRectangle.points[((polygonIndexEdited + 2) % 4)].x;
+                                                y1 = tmpRectangle.points[((polygonIndexEdited + 2) % 4)].y;
+                                                break;
+                                            }
+                                        }
+                                    else
+                                        move = true;
                                     drawing = true;
                                     break;
                             }
@@ -630,7 +847,16 @@ namespace ShapeDrawing
                     y1 = e.Y;
                     drawing = true;
                     break;
-
+                case 6:
+                    x1 = e.X;
+                    y1 = e.Y;
+                    drawing = true;
+                    break;
+                case 7:
+                    x1 = e.X;
+                    y1 = e.Y;
+                    drawing = true;
+                    break;
             }
         }
 
@@ -656,13 +882,25 @@ namespace ShapeDrawing
                                     (LastEdited as Polygon).points.Insert(polygonIndexEdited, (e.X, e.Y));
                                     DrawPolygon(LastEdited as Polygon);
                                     break;
+                                case 'R':
+                                    if (!move)
+                                        DrawRectangle(e.X, e.Y);
+                                    else
+                                    {
+                                        int width = Math.Abs((LastEdited as Rectangle).points[1].x - (LastEdited as Rectangle).points[0].x);
+                                        int height = Math.Abs((LastEdited as Rectangle).points[2].y - (LastEdited as Rectangle).points[1].y);
+                                        DrawRectangle(e.X - (width / 2), e.Y - (height / 2),
+                                                        e.X + (width / 2), e.Y + (height / 2));
+                                    }
+                                    break;
                             }
                             break;
                     case 1:
-                        DrawThickLine(x1, y1, e.X, e.Y);
+                        DrawLine(x1, y1, e.X, e.Y);
                         break;
                     case 2:
                         DrawLine(x1, y1, e.X, e.Y);
+                        shapes.Add(new Line(x1, y1, e.X, e.Y, Convert.ToInt32(thicknessBox.Text)));
                         x1 = e.X;
                         y1 = e.Y;
                         image = (Bitmap)imagePreview.Clone();
@@ -675,6 +913,12 @@ namespace ShapeDrawing
                         break;
                     case 5:
                         DrawCapsule(e.X, e.Y);
+                        break;
+                    case 6:
+                        DrawRectangle(e.X, e.Y);
+                        break;
+                    case 7:
+                        DrawRectangle(e.X, e.Y,Color.Purple);
                         break;
                 }
             }
@@ -703,6 +947,18 @@ namespace ShapeDrawing
                                 shapes.Add(LastEdited as Polygon);
                                 image = (Bitmap)imagePreview.Clone();
                                 break;
+                            case 'R':
+                                drawing = false;
+                                if(!move)
+                                    shapes.Add(new Rectangle(x1, y1, e.X, e.Y));
+                                else
+                                {
+                                    int width = Math.Abs((LastEdited as Rectangle).points[1].x - (LastEdited as Rectangle).points[0].x);
+                                    int height = Math.Abs((LastEdited as Rectangle).points[2].y - (LastEdited as Rectangle).points[1].y);
+                                    shapes.Add(new Rectangle(e.X - (width / 2), e.Y - (height / 2),
+                                                                e.X + (width / 2), e.Y + (height / 2)));
+                                }
+                                break;
                         }
                     break;
                 case 1:
@@ -721,6 +977,17 @@ namespace ShapeDrawing
                 case 5:
                     drawing = false;
                     image = (Bitmap)imagePreview.Clone();
+                    break;
+                case 6:
+                    drawing = false;
+                    shapes.Add(new Rectangle(x1, y1, e.X, e.Y));
+                    image = (Bitmap)imagePreview.Clone();
+                    break;
+                case 7:
+                    drawing = false;
+                    selection = new Rectangle(x1, y1, e.X, e.Y);
+                    image = (Bitmap)imagePreview.Clone();
+                    Redraw();
                     break;
             }
 

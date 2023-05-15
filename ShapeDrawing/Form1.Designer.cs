@@ -40,6 +40,10 @@ namespace ShapeDrawing
             this.capsuleButton = new System.Windows.Forms.Button();
             this.saveButton = new System.Windows.Forms.Button();
             this.loadButton = new System.Windows.Forms.Button();
+            this.rectangleButton = new System.Windows.Forms.Button();
+            this.selectButton = new System.Windows.Forms.Button();
+            this.bucketButton = new System.Windows.Forms.Button();
+            this.colorComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.Canvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.thicknessBar)).BeginInit();
             this.SuspendLayout();
@@ -155,11 +159,53 @@ namespace ShapeDrawing
             this.loadButton.UseVisualStyleBackColor = true;
             this.loadButton.Click += new System.EventHandler(this.loadButton_Click);
             // 
+            // rectangleButton
+            // 
+            this.rectangleButton.Location = new System.Drawing.Point(538, 128);
+            this.rectangleButton.Name = "rectangleButton";
+            this.rectangleButton.Size = new System.Drawing.Size(81, 23);
+            this.rectangleButton.TabIndex = 11;
+            this.rectangleButton.Text = "Rectangle";
+            this.rectangleButton.UseVisualStyleBackColor = true;
+            this.rectangleButton.Click += new System.EventHandler(this.rectangleButton_Click);
+            // 
+            // selectButton
+            // 
+            this.selectButton.Location = new System.Drawing.Point(538, 191);
+            this.selectButton.Name = "selectButton";
+            this.selectButton.Size = new System.Drawing.Size(81, 23);
+            this.selectButton.TabIndex = 12;
+            this.selectButton.Text = "Select";
+            this.selectButton.UseVisualStyleBackColor = true;
+            this.selectButton.Click += new System.EventHandler(this.selectButton_Click);
+            // 
+            // bucketButton
+            // 
+            this.bucketButton.Location = new System.Drawing.Point(538, 220);
+            this.bucketButton.Name = "bucketButton";
+            this.bucketButton.Size = new System.Drawing.Size(81, 23);
+            this.bucketButton.TabIndex = 13;
+            this.bucketButton.Text = "Bucket";
+            this.bucketButton.UseVisualStyleBackColor = true;
+            this.bucketButton.Click += new System.EventHandler(this.bucketButton_Click);
+            // 
+            // colorComboBox
+            // 
+            this.colorComboBox.FormattingEnabled = true;
+            this.colorComboBox.Location = new System.Drawing.Point(633, 221);
+            this.colorComboBox.Name = "colorComboBox";
+            this.colorComboBox.Size = new System.Drawing.Size(121, 23);
+            this.colorComboBox.TabIndex = 14;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.colorComboBox);
+            this.Controls.Add(this.bucketButton);
+            this.Controls.Add(this.selectButton);
+            this.Controls.Add(this.rectangleButton);
             this.Controls.Add(this.loadButton);
             this.Controls.Add(this.saveButton);
             this.Controls.Add(this.capsuleButton);
@@ -195,6 +241,10 @@ namespace ShapeDrawing
         private System.Windows.Forms.Button capsuleButton;
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.Button loadButton;
+        private System.Windows.Forms.Button rectangleButton;
+        private System.Windows.Forms.Button selectButton;
+        private System.Windows.Forms.Button bucketButton;
+        private System.Windows.Forms.ComboBox colorComboBox;
     }
 }
 
