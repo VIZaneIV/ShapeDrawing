@@ -23,6 +23,7 @@ namespace ShapeDrawing
                       // 5 - Capsule
                       // 6 - Rectangle
                       // 7 - Box Select
+                      // 8 - Bucket
 
         bool drawing = false;
         bool move = false;
@@ -37,6 +38,8 @@ namespace ShapeDrawing
         int lastIndexEdited;
 
         Rectangle selection = new Rectangle(0,0,0,0);
+
+        Color[] colors = { Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.Blue, Color.Violet };
 
         public enum Outcode
         {
@@ -674,6 +677,46 @@ namespace ShapeDrawing
 
         }
 
+        private void FloodFillInit(int x,int y, Color initColor)
+        {
+            initColor = imagePreview.GetPixel(x, y);
+            Stack<(int x, int y)> points = new Stack<(int x, int y)>();
+            points.Push((x, y));
+
+            while(points.Count != 0)
+            {
+                (int x, int y) point = points.Pop();
+                if (!points.Contains((point.x, point.y - 1)) && imagePreview.GetPixel(point.x, point.y - 1) == initColor)
+                    points.Push((point.x, point.y - 1));
+                if (!points.Contains((point.x + 1, point.y)) && imagePreview.GetPixel(point.x + 1, point.y) == initColor)
+                    points.Push((point.x + 1, point.y));
+                if (!points.Contains((point.x, point.y + 1)) && imagePreview.GetPixel(point.x, point.y + 1) == initColor)
+                    points.Push((point.x, point.y + 1));
+                if (!points.Contains((point.x - 1, point.y)) && imagePreview.GetPixel(point.x - 1, point.y) == initColor)
+                    points.Push((point.x - 1, point.y));
+
+                
+                imagePreview.SetPixel(point.x, point.y, colors[colorComboBox.SelectedIndex]);
+            }
+
+            Canvas.Image = imagePreview;
+        }
+
+        //private void FloodFill(int x, int y, Color initColor, Stack<(int x,int y)> points)
+        //{
+        //    if (imagePreview.GetPixel(x, y) != initColor)
+        //        return;
+        //    points.Push((x, y));
+        //    if (!points.Contains((x    , y - 1)))
+        //        FloodFill(x    , y - 1, initColor, points);
+        //    if (!points.Contains((x + 1, y)))
+        //        FloodFill(x + 1, y    , initColor, points);
+        //    if (!points.Contains((x    , y + 1)))
+        //        FloodFill(x    , y + 1, initColor, points);
+        //    if (!points.Contains((x - 1, y)))
+        //        FloodFill(x - 1, y    , initColor, points);
+        //}
+
         private void grabButton_Click(object sender, EventArgs e)
         {
             mode = 0;
@@ -856,6 +899,10 @@ namespace ShapeDrawing
                     x1 = e.X;
                     y1 = e.Y;
                     drawing = true;
+                    break;
+                case 8:
+                    FloodFillInit(e.X, e.Y, imagePreview.GetPixel(e.X, e.Y));
+                    image = (Bitmap)imagePreview.Clone();
                     break;
             }
         }
